@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDScript 第一课 · 学生练习本</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f6f2;--surface:#fff;--surface2:#f0eff9;
+  --border:#e2e0f0;--border2:#c8c5e8;
+  --text:#1a1830;--text2:#5a5880;--text3:#9896b8;
+  --purple:#6d28d9;--pl:#ede9fe;--pm:#8b5cf6;
+  --green:#16a34a;--gl:#dcfce7;
+  --amber:#d97706;--al:#fef3c7;
+  --red:#dc2626;--rl:#fee2e2;
+  --blue:#2563eb;--bl:#dbeafe;
+  --mono:'JetBrains Mono',monospace;
+  --body:'Noto Sans SC',sans-serif;
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;font-size:17px}
+.wrap{max-width:820px;margin:0 auto;padding:28px 20px 100px}
+
+/* header */
+.hdr{text-align:center;margin-bottom:36px}
+.badge{display:inline-block;font-size:13px;font-weight:600;padding:4px 14px;border-radius:20px;background:var(--pl);color:var(--purple);margin-bottom:12px;letter-spacing:.05em}
+.hdr h1{font-size:30px;font-weight:700;margin-bottom:6px}
+.hdr p{font-size:16px;color:var(--text2);line-height:1.6}
+
+/* score bar */
+.score-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;margin-bottom:20px}
+.score-stars{font-size:22px;letter-spacing:2px}
+.score-num{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--purple)}
+.score-label{font-size:13px;color:var(--text3)}
+.progress-wrap{height:5px;background:var(--border);border-radius:3px;margin-bottom:24px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--pm),var(--purple));border-radius:3px;transition:width .5s ease}
+
+/* nav pills */
+.pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px;justify-content:center}
+.pill{padding:6px 14px;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .18s}
+.pill:hover{border-color:var(--pm);color:var(--purple)}
+.pill.on{background:var(--purple);color:#fff;border-color:var(--purple)}
+.pill.done{background:var(--gl);color:var(--green);border-color:var(--green)}
+
+/* section */
+.sec{display:none;flex-direction:column;gap:14px;animation:up .3s ease}
+.sec.on{display:flex}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.sec-title{font-size:21px;font-weight:700;color:var(--text)}
+.sec-sub{font-size:15px;color:var(--text2);line-height:1.7}
+
+/* boxes */
+.box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+.box-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px}
+.box p{font-size:15px;color:var(--text2);line-height:1.8}
+.story-box{background:var(--pl);border-left:4px solid var(--pm);border-radius:0 var(--rs) var(--rs) 0;padding:13px 17px;font-size:15px;color:var(--purple);line-height:1.8}
+.tip-box{background:var(--gl);border-left:4px solid var(--green);border-radius:0 var(--rs) var(--rs) 0;padding:11px 15px;font-size:14px;color:var(--green);line-height:1.7}
+.warn-box{background:var(--al);border-left:4px solid var(--amber);border-radius:0 var(--rs) var(--rs) 0;padding:11px 15px;font-size:14px;color:var(--amber);line-height:1.7}
+.note-box{background:var(--bl);border-left:4px solid var(--blue);border-radius:0 var(--rs) var(--rs) 0;padding:11px 15px;font-size:14px;color:var(--blue);line-height:1.7}
+
+/* code */
+.code-wrap{border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.code-top{background:#1e1b4b;padding:7px 15px;font-size:13px;color:#a5b4fc;font-family:var(--mono);display:flex;justify-content:space-between;align-items:center}
+.code-body{background:#0f0e2e;overflow-x:auto}
+.cl{display:flex;align-items:stretch;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background .13s}
+.cl:last-child{border-bottom:none}
+.cl:hover{background:rgba(139,92,246,0.08)}
+.cl.lit{background:rgba(139,92,246,0.16)}
+.ln{min-width:38px;padding:10px 7px;font-size:12px;color:#4a4880;text-align:right;font-family:var(--mono);flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06)}
+.lc{padding:10px 15px;font-family:var(--mono);font-size:14px;line-height:1.6;color:#e2e0ff;white-space:pre;flex:1}
+.exp{display:none;padding:9px 14px 11px 50px;font-size:14px;color:#c4b5fd;line-height:1.7;background:rgba(109,40,217,0.12);border-top:1px solid rgba(139,92,246,0.2)}
+.exp.on{display:block}
+.exp strong{color:#a5b4fc}
+.mc{font-family:var(--mono);font-size:13px;background:rgba(139,92,246,0.22);padding:1px 5px;border-radius:4px;color:#ddd6fe}
+.kw{color:#c084fc}.fn{color:#67e8f9}.str{color:#86efac}.num{color:#fdba74}
+.cmt{color:#4a4880;font-style:italic}.param{color:#fde68a}.cls{color:#93c5fd}.op{color:#f9a8d4}
+
+/* ── QUESTION CARD ── */
+.q-card{border-radius:var(--r);overflow:hidden;border:2px solid var(--border2)}
+.q-hdr{display:flex;align-items:center;gap:10px;padding:13px 18px;background:var(--pl)}
+.q-hdr .q-icon{font-size:22px}
+.q-hdr h3{font-size:16px;font-weight:700;color:var(--purple);flex:1}
+.q-hdr .q-pts{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--pm);background:#fff;border-radius:10px;padding:2px 9px}
+.q-body{padding:18px 20px;background:var(--surface)}
+.q-text{font-size:16px;font-weight:500;color:var(--text);margin-bottom:14px;line-height:1.6}
+.q-hint{font-size:13px;color:var(--text3);margin-bottom:12px;font-style:italic}
+
+/* MCQ options */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{padding:11px 16px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;cursor:pointer;text-align:left;transition:all .15s;width:100%}
+.opt:hover:not(:disabled){border-color:var(--pm);background:var(--pl);color:var(--purple)}
+.opt.correct{border-color:var(--green)!important;background:var(--gl)!important;color:var(--green)!important}
+.opt.wrong{border-color:var(--red)!important;background:var(--rl)!important;color:var(--red)!important}
+.opt:disabled{cursor:default}
+
+/* Fill in blank */
+.fill-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.fill-input{border:2px solid var(--border2);border-radius:var(--rs);padding:9px 14px;font-size:15px;font-family:var(--mono);color:var(--text);background:var(--surface2);outline:none;min-width:200px;transition:border-color .2s}
+.fill-input:focus{border-color:var(--pm)}
+.fill-input.ok{border-color:var(--green);background:var(--gl)}
+.fill-input.no{border-color:var(--red);background:var(--rl)}
+.check-btn{padding:9px 20px;border-radius:var(--rs);font-size:15px;font-weight:600;background:var(--purple);color:#fff;border:none;cursor:pointer;transition:background .15s}
+.check-btn:hover{background:#5b21b6}
+
+/* Code fill */
+.code-fill-wrap{background:#0f0e2e;border-radius:var(--r);padding:16px;font-family:var(--mono);font-size:14px;line-height:2.2;border:1px solid #2d2b60;overflow-x:auto}
+.code-blank{display:inline-block;border-bottom:2px solid var(--pm);background:rgba(139,92,246,0.15);border-radius:4px;padding:0 6px;min-width:80px;color:#c4b5fd;font-family:var(--mono);font-size:14px;outline:none;margin:0 2px;vertical-align:middle;transition:all .2s}
+.code-blank:focus{border-color:var(--amber);background:rgba(255,204,0,0.1);color:#fde68a}
+.code-blank.ok{border-color:var(--green);background:rgba(0,255,136,0.1);color:#86efac}
+.code-blank.no{border-color:var(--red);background:rgba(220,38,38,0.15);color:#fca5a5}
+
+/* Drag match */
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:10px}
+.match-col h4{font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--text3);margin-bottom:8px}
+.match-items{display:flex;flex-direction:column;gap:6px}
+.match-chip{padding:9px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface);font-size:14px;cursor:grab;transition:all .15s;user-select:none}
+.match-chip:hover{border-color:var(--pm);background:var(--pl)}
+.match-chip.dragging{opacity:.5;cursor:grabbing}
+.match-drop{padding:9px 14px;border-radius:var(--rs);border:2px dashed var(--border2);background:var(--surface2);font-size:14px;min-height:42px;transition:all .2s;color:var(--text3)}
+.match-drop.drag-over{border-color:var(--pm);background:var(--pl)}
+.match-drop.filled{border-style:solid;background:var(--surface);color:var(--text)}
+.match-drop.correct{border-color:var(--green);background:var(--gl);color:var(--green)}
+.match-drop.wrong{border-color:var(--red);background:var(--rl);color:var(--red)}
+
+/* Feedback */
+.fb{font-size:14px;margin-top:10px;padding:10px 14px;border-radius:var(--rs);display:none;line-height:1.6}
+.fb.on{display:block}
+.fb.ok{background:var(--gl);color:var(--green)}
+.fb.no{background:var(--rl);color:var(--red)}
+.fb.info{background:var(--bl);color:var(--blue)}
+
+/* Write code area */
+.write-wrap{border-radius:var(--r);overflow:hidden;border:2px solid var(--border2)}
+.write-top{background:#1e1b4b;padding:8px 14px;font-size:13px;color:#a5b4fc;font-family:var(--mono);display:flex;justify-content:space-between;align-items:center}
+.write-area{width:100%;padding:14px 16px;font-family:var(--mono);font-size:14px;line-height:2;background:#0f0e2e;color:#e2e0ff;border:none;outline:none;resize:vertical;min-height:140px}
+.write-btns{display:flex;gap:8px;padding:10px 14px;background:#1a1840;border-top:1px solid #2d2b60}
+.run-btn{padding:8px 18px;border-radius:var(--rs);font-size:14px;font-weight:600;background:var(--pm);color:#fff;border:none;cursor:pointer}
+.run-btn:hover{background:var(--purple)}
+.reset-btn{padding:8px 16px;border-radius:var(--rs);font-size:14px;background:transparent;color:#6d6a9c;border:1px solid #2d2b60;cursor:pointer}
+.run-output{background:#050514;padding:12px 16px;font-family:var(--mono);font-size:13px;color:#6ee7b7;line-height:1.8;border-top:1px solid #2d2b60;display:none;min-height:50px}
+.run-output.on{display:block}
+
+/* Thinking question */
+.think-card{background:var(--surface);border:2px solid #fde68a;border-radius:var(--r);padding:18px 20px}
+.think-label{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--amber);margin-bottom:8px}
+.think-q{font-size:16px;font-weight:500;color:var(--text);margin-bottom:14px;line-height:1.6}
+.think-area{width:100%;border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:15px;font-family:var(--body);color:var(--text);background:var(--surface2);outline:none;resize:vertical;min-height:80px;line-height:1.7}
+.think-area:focus{border-color:var(--amber)}
+.reveal-btn{margin-top:10px;padding:8px 18px;border-radius:var(--rs);font-size:14px;background:var(--al);color:var(--amber);border:1.5px solid #fcd34d;cursor:pointer;font-weight:500}
+.answer-reveal{background:var(--al);border-radius:var(--rs);padding:12px 16px;font-size:14px;color:var(--amber);margin-top:10px;line-height:1.7;display:none}
+.answer-reveal.on{display:block}
+
+/* Game */
+.game-box{background:#0f0e2e;border-radius:var(--r);border:2px solid var(--pm);overflow:hidden}
+.game-top{background:#1e1b4b;padding:9px 18px;font-size:14px;color:#a5b4fc;font-family:var(--mono);display:flex;align-items:center;gap:8px}
+.game-screen{padding:22px;display:flex;flex-direction:column;gap:12px}
+.g-text{font-size:16px;color:#e2e0ff;line-height:1.8}
+.g-hl{color:#c084fc;font-weight:700}
+.g-ok{color:#86efac;font-weight:700}
+.g-no{color:#fca5a5;font-weight:700}
+.g-input{background:#1a1840;border:1.5px solid #4a4880;border-radius:8px;padding:8px 13px;font-size:16px;color:#e2e0ff;font-family:var(--mono);outline:none;width:110px;transition:border-color .2s}
+.g-input:focus{border-color:var(--pm)}
+.g-btn{padding:8px 18px;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;border:none}
+.g-btn.p{background:var(--pm);color:#fff}.g-btn.p:hover{background:var(--purple)}
+.g-btn.s{background:#1a1840;color:#a5b4fc;border:1.5px solid #4a4880}.g-btn.s:hover{border-color:var(--pm)}
+.g-lives{display:flex;gap:5px}
+.life{width:16px;height:16px;border-radius:50%;background:#f87171;transition:all .3s}
+.life.lost{background:#2a2840;border:1.5px solid #4a4880}
+.g-hist{display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto}
+.g-hist-item{font-size:13px;font-family:var(--mono);color:#6d6a9c;padding:2px 0}
+
+/* nav */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.nav-btn{padding:9px 20px;font-size:15px;font-weight:500;border-radius:var(--rs);cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
+.nav-btn:hover{border-color:var(--pm);color:var(--purple)}
+.nav-btn.p{background:var(--purple);color:#fff;border-color:var(--purple)}
+.nav-btn.p:hover{background:#5b21b6}
+.pi{font-size:14px;color:var(--text3)}
+
+/* result panel */
+.result-panel{text-align:center;padding:28px 20px;background:var(--surface);border:2px solid var(--border2);border-radius:var(--r)}
+.result-emoji{font-size:52px;margin-bottom:12px}
+.result-title{font-size:24px;font-weight:700;color:var(--text);margin-bottom:8px}
+.result-msg{font-size:16px;color:var(--text2);line-height:1.7;margin-bottom:20px}
+.result-stars{font-size:36px;margin-bottom:16px;letter-spacing:4px}
+
+/* compare grid */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:540px){.cmp{grid-template-columns:1fr}}
+.cmp-box{border-radius:var(--rs);padding:13px;border:1px solid var(--border)}
+.cmp-label{font-size:11px;font-weight:700;letter-spacing:.08em;margin-bottom:7px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div class="badge">GDScript 第一课 · 学生练习本</div>
+  <h1>猜数字游戏 🎮</h1>
+  <p>边学边做，每一步都有练习题<br>答对得星星 ⭐，完成全部挑战！</p>
+</div>
+
+<div class="score-bar">
+  <div>
+    <div class="score-label">已获得星星</div>
+    <div class="score-stars" id="star-display">☆☆☆☆☆☆☆☆☆☆</div>
+  </div>
+  <div style="text-align:right">
+    <div class="score-label">总分</div>
+    <div class="score-num" id="score-num">0 / 100</div>
+  </div>
+</div>
+<div class="progress-wrap"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+<div class="pills">
+  <button class="pill on" onclick="go(0)">① 认识 GDScript</button>
+  <button class="pill" onclick="go(1)">② 先玩游戏</button>
+  <button class="pill" onclick="go(2)">③ 变量练习</button>
+  <button class="pill" onclick="go(3)">④ 函数练习</button>
+  <button class="pill" onclick="go(4)">⑤ 条件判断练习</button>
+  <button class="pill" onclick="go(5)">⑥ 输出练习</button>
+  <button class="pill" onclick="go(6)">⑦ 写代码挑战</button>
+  <button class="pill" onclick="go(7)">⑧ 总成绩</button>
+</div>
+
+<!-- ══ S0: 认识 GDScript ══ -->
+<div class="sec on" id="s0">
+  <div class="sec-title">👋 认识 GDScript</div>
+  <div class="sec-sub">你已经懂变量和函数了，那你已经有了最重要的基础！今天只需要学 GDScript 和你以前学过的有什么不一样。</div>
+
+  <div class="story-box">GDScript 是 Godot 游戏引擎专用的编程语言，长得很像 Python。你学过的变量、函数、if、for 这里全都能用，只是语法略有不同。</div>
+
+  <div class="cmp">
+    <div class="cmp-box" style="background:var(--surface2)"><div class="cmp-label" style="color:var(--text3)">普通编程</div><p style="font-size:14px;color:var(--text2);line-height:1.9">代码跑完就结束<br>你自己画界面<br>函数要自己调用</p></div>
+    <div class="cmp-box" style="background:var(--pl)"><div class="cmp-label" style="color:var(--purple)">GDScript</div><p style="font-size:14px;color:var(--purple);line-height:1.9">游戏一直运行，等玩家操作<br>Godot 帮你管理按钮文字<br>有些函数 Godot 自动调用</p></div>
+  </div>
+
+  <!-- Q1: 思考题 -->
+  <div class="think-card">
+    <div class="think-label">💭 思考一下（不计分）</div>
+    <div class="think-q">你学过的编程语言里，写好程序运行一次就结束了。但游戏不一样——你打开游戏，它会一直等你操作。你觉得游戏为什么能一直等着，不会自己结束？</div>
+    <textarea class="think-area" placeholder="写下你的想法……"></textarea>
+    <button class="reveal-btn" onclick="reveal('think0')">看参考答案</button>
+    <div class="answer-reveal" id="think0">游戏有一个不停运行的「主循环」，就像一个永不停止的 for 循环，每一帧都在检查：玩家有没有按键？有没有点击？根据玩家的操作再做出反应。Godot 帮我们管理了这个主循环，我们只需要写「玩家操作时应该发生什么」。</div>
+  </div>
+
+  <!-- Q2: 选择题 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">❓</div><h3>选择题 1</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">GDScript 里有一个特殊函数叫 <span style="font-family:var(--mono);color:var(--purple)">_ready()</span>，你不需要手动调用它。它什么时候会自动运行？</div>
+      <div class="opts">
+        <button class="opt" onclick="mcq(this,false,'q1','每隔一秒自动运行一次')">每隔一秒自动运行一次</button>
+        <button class="opt" onclick="mcq(this,true,'q1','✓ 答对了！_ready() 是场景加载完成后自动运行一次的函数，就像游戏的「开场仪式」。')">游戏场景加载完成后，自动运行一次</button>
+        <button class="opt" onclick="mcq(this,false,'q1','不对哦，_input 才是处理点击的函数。')">玩家点击屏幕的时候</button>
+        <button class="opt" onclick="mcq(this,false,'q1','不对哦，_ready 不需要你手动叫它。')">你在代码里手动调用它的时候</button>
+      </div>
+      <div class="fb" id="q1"></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><span></span><span class="pi">第 1 / 8 步</span><button class="nav-btn p" onclick="go(1)">下一步：先玩游戏 →</button></div>
+</div>
+
+<!-- ══ S1: 先玩游戏 ══ -->
+<div class="sec" id="s1">
+  <div class="sec-title">🎮 先玩一遍，再学代码</div>
+  <div class="sec-sub">在学代码之前，先把游戏玩一遍。玩的时候思考：游戏是用什么判断你猜大了还是猜小了？</div>
+
+  <div class="game-box">
+    <div class="game-top"><span>⬛</span><span>猜数字游戏</span><span style="margin-left:auto;font-size:12px;color:#6d6a9c">GDScript Demo</span></div>
+    <div class="game-screen">
+      <div class="g-text" id="gs">我已经想好了一个 <span class="g-hl">1 到 100</span> 之间的数字！你有 <span class="g-hl">5 次</span> 机会猜对它。</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="g-text">剩余生命：</div>
+        <div class="g-lives" id="gl"><div class="life" id="l0"></div><div class="life" id="l1"></div><div class="life" id="l2"></div><div class="life" id="l3"></div><div class="life" id="l4"></div></div>
+      </div>
+      <div id="g-irow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="g-text">你的猜测：</div>
+        <input class="g-input" type="number" id="gi" min="1" max="100" placeholder="1-100" onkeydown="if(event.key==='Enter')doGuess()">
+        <button class="g-btn p" onclick="doGuess()">确认</button>
+        <button class="g-btn s" onclick="resetG()">重新开始</button>
+      </div>
+      <div style="font-size:13px;color:#6d6a9c;font-family:var(--mono)" id="ghint">提示：范围 1 到 100</div>
+      <div class="g-hist" id="ghist"></div>
+    </div>
+  </div>
+
+  <!-- 玩完的思考题 -->
+  <div class="think-card">
+    <div class="think-label">💭 玩完之后思考</div>
+    <div class="think-q">游戏里当你猜小了，它怎么知道要显示「猜小了」？你猜游戏代码里用了什么语法来做这个判断？</div>
+    <textarea class="think-area" placeholder="写下你的猜测……"></textarea>
+    <button class="reveal-btn" onclick="reveal('think1')">看答案</button>
+    <div class="answer-reveal" id="think1">游戏用了 <strong>if / elif / else</strong> 条件判断！大概是这样：<br>if 玩家猜的 == 秘密数字 → 猜对了<br>elif 玩家猜的 &lt; 秘密数字 → 猜小了<br>else → 猜大了<br>这就是接下来要学的内容！</div>
+  </div>
+
+  <!-- Q2: 填空题 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">✏️</div><h3>填空题</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">游戏一共给玩家 <span id="fill-ans1" style="display:inline-block;border-bottom:2px solid var(--pm);width:60px;text-align:center">___</span> 次猜测机会，每猜错一次，剩余次数减 <span id="fill-ans2" style="display:inline-block;border-bottom:2px solid var(--pm);width:40px;text-align:center">___</span>。</div>
+      <div class="q-hint">提示：回想你刚才玩游戏时看到的数字</div>
+      <div class="fill-wrap">
+        <input class="fill-input" type="number" id="f1" placeholder="第一个空">
+        <input class="fill-input" type="number" id="f2" placeholder="第二个空">
+        <button class="check-btn" onclick="checkFill()">检查答案</button>
+      </div>
+      <div class="fb" id="fq1"></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><button class="nav-btn" onclick="go(0)">← 上一步</button><span class="pi">第 2 / 8 步</span><button class="nav-btn p" onclick="go(2)">下一步：变量练习 →</button></div>
+</div>
+
+<!-- ══ S2: 变量练习 ══ -->
+<div class="sec" id="s2">
+  <div class="sec-title">📦 变量 — GDScript 写法</div>
+  <div class="sec-sub">你已经知道变量是「盒子」。GDScript 最大的不同：建新变量必须在前面加 <span style="font-family:var(--mono);color:var(--purple)">var</span>。</div>
+
+  <div class="code-wrap">
+    <div class="code-top"><div>📄 猜数字游戏的变量</div><div style="font-size:12px">点击每行看说明</div></div>
+    <div class="code-body">
+      <div class="cl" onclick="tog(this)"><div class="ln">1</div><div class="lc"><span class="kw">var</span> <span class="param">secret_number</span>   = <span class="num">0</span></div><div class="exp">建一个叫 <strong>secret_number</strong> 的盒子，初始放 0。<br>游戏开始时会换成随机数。<strong>var</strong> 是 GDScript 建变量必须写的关键字。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">2</div><div class="lc"><span class="kw">var</span> <span class="param">remaining_lives</span> = <span class="num">5</span></div><div class="exp">剩余猜测次数，初始 5。每猜错一次减 1，减到 0 游戏结束。<br><span class="mc">remaining</span> = 剩余，<span class="mc">lives</span> = 生命/次数。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">3</div><div class="lc"><span class="kw">var</span> <span class="param">score</span>           = <span class="num">100</span></div><div class="exp">玩家分数，初始 100 分。每猜错扣 20 分，猜对了保留当前分数。越早猜对，分越高！</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">4</div><div class="lc"><span class="kw">var</span> <span class="param">game_over</span>       = <span class="kw">false</span></div><div class="exp">游戏结束的「开关」，只有两个值：<span class="mc">true</span>（是）或 <span class="mc">false</span>（否）。<br>注意 GDScript 用<strong>小写</strong> true/false，不像有些语言用大写 True/False！</div></div>
+    </div>
+  </div>
+
+  <!-- 思考题 -->
+  <div class="think-card">
+    <div class="think-label">💭 先想一想</div>
+    <div class="think-q">为什么需要 <span style="font-family:var(--mono)">game_over</span> 这个变量？如果没有它，游戏结束后会发生什么问题？</div>
+    <textarea class="think-area" placeholder="写下你的想法……"></textarea>
+    <button class="reveal-btn" onclick="reveal('think2')">看答案</button>
+    <div class="answer-reveal" id="think2">如果没有 game_over，游戏结束后玩家还能继续猜！比如已经猜对了，但玩家还在输入数字，游戏就乱了。<br>game_over 就是一道「门」，游戏结束就把门关上，不让玩家继续操作。</div>
+  </div>
+
+  <!-- MCQ -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">❓</div><h3>选择题 2</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">在 GDScript 里，建立一个叫 <span style="font-family:var(--mono)">player_name</span>，值是 <span style="font-family:var(--mono)">"小明"</span> 的变量，正确写法是？</div>
+      <div class="opts">
+        <button class="opt" onclick="mcq(this,false,'q2','不对！GDScript 建变量必须在前面加 var。')">player_name = "小明"</button>
+        <button class="opt" onclick="mcq(this,true,'q2','✓ 答对了！var 开头，然后变量名，然后 = 值。')">var player_name = "小明"</button>
+        <button class="opt" onclick="mcq(this,false,'q2','不对！var 要小写，VAR 会报错。')">VAR player_name = "小明"</button>
+        <button class="opt" onclick="mcq(this,false,'q2','不对！new 不是 GDScript 建变量的关键字。')">new player_name = "小明"</button>
+      </div>
+      <div class="fb" id="q2"></div>
+    </div>
+  </div>
+
+  <!-- 填代码题 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">✏️</div><h3>填代码题</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">把下面代码的空白填完整，建立三个游戏需要的变量：</div>
+      <div class="code-fill-wrap">
+        <span class="kw">var</span> <input class="code-blank" id="cb1" placeholder="变量名"> = <span class="num">0</span>   <span class="cmt"># 秘密数字</span>
+<span class="kw">var</span> <input class="code-blank" id="cb2" placeholder="变量名"> = <span class="num">5</span>   <span class="cmt"># 剩余次数</span>
+<span class="kw">var</span> <input class="code-blank" id="cb3" placeholder="变量名"> = <span class="kw">false</span> <span class="cmt"># 游戏结束？</span>
+      </div>
+      <div style="margin-top:10px"><button class="check-btn" onclick="checkCodeFill()">检查</button></div>
+      <div class="fb" id="cfb1"></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><button class="nav-btn" onclick="go(1)">← 上一步</button><span class="pi">第 3 / 8 步</span><button class="nav-btn p" onclick="go(3)">下一步：函数练习 →</button></div>
+</div>
+
+<!-- ══ S3: 函数练习 ══ -->
+<div class="sec" id="s3">
+  <div class="sec-title">⚙️ 函数 — GDScript 写法</div>
+  <div class="sec-sub">函数就是「把一组步骤打包起来，起个名字」。GDScript 用 <span style="font-family:var(--mono);color:var(--purple)">func</span> 关键字定义函数。</div>
+
+  <div class="warn-box">GDScript 最容易忘的两件事：<br>1. 函数名后面的冒号 <strong>:</strong> 不能漏掉<br>2. 函数体必须缩进（用 Tab 键）</div>
+
+  <div class="code-wrap">
+    <div class="code-top"><div>📄 游戏的两个核心函数</div><div style="font-size:12px">点击每行看说明</div></div>
+    <div class="code-body">
+      <div class="cl" onclick="tog(this)"><div class="ln">1</div><div class="lc"><span class="kw">func</span> <span class="fn">_ready</span>():</div><div class="exp"><strong>_ready</strong> 是 Godot 的特殊函数，场景加载完自动运行一次。名字前的 _ 代表「系统函数」，不需要你手动调用。<br>我们在这里生成随机数，初始化游戏。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">2</div><div class="lc">    <span class="param">secret_number</span> = <span class="fn">randi_range</span>(<span class="num">1</span>, <span class="num">100</span>)</div><div class="exp"><strong>randi_range(1, 100)</strong> 是 GDScript 内建函数，生成 1 到 100 的随机整数。就像让电脑闭着眼睛随机想一个数字。<br>缩进用 Tab 键，代表这行属于 _ready 函数。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">4</div><div class="lc"><span class="kw">func</span> <span class="fn">check_guess</span>(<span class="param">player_input</span>):</div><div class="exp"><strong>check_guess</strong> 是我们自己定义的函数，玩家点击「确认」时调用它。<br><strong>player_input</strong> 是参数，玩家输入的数字通过这里传进来。就像点外卖时填「备注」，函数拿到备注再做对应处理。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">5</div><div class="lc">    <span class="kw">if</span> <span class="param">game_over</span>: <span class="kw">return</span></div><div class="exp"><strong>return</strong> 是「立刻停止，退出这个函数」。游戏已经结束了，就不继续处理玩家的猜测。就像门已经关了，新来的人不能进去。</div></div>
+    </div>
+  </div>
+
+  <!-- 思考题 -->
+  <div class="think-card">
+    <div class="think-label">💭 先想一想</div>
+    <div class="think-q">游戏里有 _ready() 和 check_guess() 两个函数。谁来调用 _ready()？谁来调用 check_guess()？时机有什么不同？</div>
+    <textarea class="think-area" placeholder="写下你的想法……"></textarea>
+    <button class="reveal-btn" onclick="reveal('think3')">看答案</button>
+    <div class="answer-reveal" id="think3"><strong>_ready()</strong>：Godot 系统自动调用，游戏场景加载好时运行，只跑一次。你不需要写任何代码来调用它。<br><br><strong>check_guess()</strong>：玩家点击「确认」按钮时，按钮的 pressed 信号触发，调用这个函数。每次玩家猜测都会调用一次，可以调用很多次。</div>
+  </div>
+
+  <!-- 连连看 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">🔗</div><h3>连连看：函数 vs 调用时机</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">把左边的函数和右边它被调用的时机连起来。把右边的选项拖到左边对应的函数旁边。</div>
+      <div class="match-wrap">
+        <div>
+          <h4>函数名</h4>
+          <div class="match-items">
+            <div class="match-chip" style="border-color:var(--pm);background:var(--pl);color:var(--purple)">_ready()</div>
+            <div class="match-chip" style="margin-top:32px;border-color:var(--pm);background:var(--pl);color:var(--purple)">check_guess()</div>
+            <div class="match-chip" style="margin-top:32px;border-color:var(--pm);background:var(--pl);color:var(--purple)">update_display()</div>
+          </div>
+        </div>
+        <div>
+          <h4>拖到这里</h4>
+          <div class="match-items">
+            <div class="match-drop" id="md0" ondragover="dragOver(event)" ondrop="dropIt(event,'md0')">拖一个时机到这里</div>
+            <div class="match-drop" id="md1" ondragover="dragOver(event)" ondrop="dropIt(event,'md1')">拖一个时机到这里</div>
+            <div class="match-drop" id="md2" ondragover="dragOver(event)" ondrop="dropIt(event,'md2')">拖一个时机到这里</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <div class="match-chip" draggable="true" id="mc-a" ondragstart="dragStart(event,'场景加载完自动运行')">场景加载完自动运行</div>
+        <div class="match-chip" draggable="true" id="mc-b" ondragstart="dragStart(event,'玩家点确认按钮时')">玩家点确认按钮时</div>
+        <div class="match-chip" draggable="true" id="mc-c" ondragstart="dragStart(event,'每次猜完后刷新界面')">每次猜完后刷新界面</div>
+      </div>
+      <button class="check-btn" onclick="checkMatch()">检查连连看</button>
+      <div class="fb" id="mfb"></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><button class="nav-btn" onclick="go(2)">← 上一步</button><span class="pi">第 4 / 8 步</span><button class="nav-btn p" onclick="go(4)">下一步：条件判断 →</button></div>
+</div>
+
+<!-- ══ S4: 条件判断 ══ -->
+<div class="sec" id="s4">
+  <div class="sec-title">🔀 条件判断 if / elif / else</div>
+  <div class="sec-sub">你应该已经认识 if/else 了！GDScript 写法几乎一样，只记住：条件后面要加冒号 <span style="font-family:var(--mono);color:var(--purple)">:</span>，下一行要缩进。</div>
+
+  <div class="code-wrap">
+    <div class="code-top"><div>📄 猜数字的核心判断</div><div style="font-size:12px">点击每行看说明</div></div>
+    <div class="code-body">
+      <div class="cl" onclick="tog(this)"><div class="ln">1</div><div class="lc">    <span class="kw">if</span> <span class="param">player_input</span> == <span class="param">secret_number</span>:</div><div class="exp"><strong>==</strong> 是「等于」的比较（不是赋值的单个 =）。检查玩家输入的数是不是和秘密数字相同。<br>冒号 : 是必须的，代表「下面缩进的是这个条件成立时要做的事」。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">2</div><div class="lc">        <span class="param">game_over</span> = <span class="kw">true</span></div><div class="exp">猜对了！把游戏结束的开关打开。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">3</div><div class="lc">    <span class="kw">elif</span> <span class="param">player_input</span> &lt; <span class="param">secret_number</span>:</div><div class="exp"><strong>elif</strong> = else if（否则如果）。上面条件不满足时才判断这个。<br>< 是小于号。玩家猜的数比秘密数小 = 猜小了。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">4</div><div class="lc">        <span class="param">remaining_lives</span> -= <span class="num">1</span></div><div class="exp"><strong>-= 1</strong> 是「在原来基础上减 1」的简写，等同于 remaining_lives = remaining_lives - 1。猜错一次，次数少一次。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">5</div><div class="lc">    <span class="kw">else</span>:</div><div class="exp">以上条件都不满足 = 玩家猜的数比秘密数大 = 猜大了。else 不需要写条件，直接处理「剩余所有情况」。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">6</div><div class="lc">    <span class="kw">if</span> <span class="param">remaining_lives</span> == <span class="num">0</span> <span class="kw">and not</span> <span class="param">game_over</span>:</div><div class="exp">检查次数用完且没赢。<br><strong>and</strong> = 两个条件都要满足<br><strong>not</strong> = 「不是」的意思<br>所以这行 = 「次数是0，而且还没赢」才进入这个分支。</div></div>
+    </div>
+  </div>
+
+  <!-- 互动拖滑条 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">🎚️</div><h3>互动演示：拖动分数，看触发哪个条件</h3><div class="q-pts">不计分</div></div>
+    <div class="q-body">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <span style="font-size:15px;color:var(--text2)">玩家猜的数 =</span>
+        <input type="range" min="1" max="100" value="50" id="guess-slider" oninput="updateSlider()" style="flex:1;max-width:220px">
+        <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--purple)" id="slider-val">50</span>
+        <span style="font-size:14px;color:var(--text3)">秘密数字 = <strong style="color:var(--text)">63</strong></span>
+      </div>
+      <div style="padding:12px 16px;border-radius:var(--rs);font-size:16px;font-weight:600;text-align:center;transition:all .3s" id="slider-result" style="background:var(--surface2)">
+        猜 50，秘密数是 63 → 猜小了！
+      </div>
+    </div>
+  </div>
+
+  <!-- MCQ -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">❓</div><h3>选择题 3</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">代码里有 <span style="font-family:var(--mono)">if remaining_lives == 0 and not game_over:</span>，这个条件是什么意思？</div>
+      <div class="opts">
+        <button class="opt" onclick="mcq(this,false,'q3','不对哦，or 是两个满足一个就行，这里用的是 and。')">次数是 0 或者游戏结束了，满足其中一个</button>
+        <button class="opt" onclick="mcq(this,true,'q3','✓ 答对了！and 要求两个条件同时满足，not game_over 表示游戏还没赢。')">次数归零，而且游戏还没赢，两个条件同时满足</button>
+        <button class="opt" onclick="mcq(this,false,'q3','不对！not game_over 是「游戏没结束/没赢」。')">次数是 0 并且游戏已经赢了</button>
+        <button class="opt" onclick="mcq(this,false,'q3','不对！== 是比较等于，不是赋值。')">把 remaining_lives 设置为 0</button>
+      </div>
+      <div class="fb" id="q3"></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><button class="nav-btn" onclick="go(3)">← 上一步</button><span class="pi">第 5 / 8 步</span><button class="nav-btn p" onclick="go(5)">下一步：输出练习 →</button></div>
+</div>
+
+<!-- ══ S5: 输出练习 ══ -->
+<div class="sec" id="s5">
+  <div class="sec-title">🖥️ 输出到游戏界面</div>
+  <div class="sec-sub">普通编程用 print() 显示文字。但 print() 只在调试面板出现，<strong>玩家看不到</strong>。Godot 里要让玩家看到文字，要改节点的 .text 属性。</div>
+
+  <div class="cmp">
+    <div class="cmp-box" style="background:var(--surface2)">
+      <div class="cmp-label" style="color:var(--text3)">调试用（玩家看不到）</div>
+      <p style="font-family:var(--mono);font-size:14px;color:var(--text2);line-height:2.2"><span style="color:#9896b8">print</span>(<span style="color:#16a34a">"猜对了！"</span>)</p>
+      <p style="font-size:13px;color:var(--text3);margin-top:6px">只在 Godot Output 面板显示</p>
+    </div>
+    <div class="cmp-box" style="background:var(--pl)">
+      <div class="cmp-label" style="color:var(--purple)">界面显示（玩家能看到）</div>
+      <p style="font-family:var(--mono);font-size:14px;color:var(--purple);line-height:2.2"><span style="color:#f9a8d4">$</span><span style="color:#93c5fd">StatusLabel</span>.text = <span style="color:#86efac">"猜对了！"</span></p>
+      <p style="font-size:13px;color:#7c6fac;margin-top:6px">$ 找到节点，.text 改文字</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-top"><div>📄 字符串拼接：数字 + 文字</div><div style="font-size:12px">点击看说明</div></div>
+    <div class="code-body">
+      <div class="cl" onclick="tog(this)"><div class="ln">1</div><div class="lc"><span class="kw">var</span> <span class="param">score</span> = <span class="num">80</span></div><div class="exp">先建一个分数变量。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">2</div><div class="lc"><span class="op">$</span><span class="cls">ScoreLabel</span>.text = <span class="str">"你的分数："</span> + <span class="fn">str</span>(<span class="param">score</span>)</div><div class="exp">把文字和数字拼在一起显示「你的分数：80」。<br><strong>str(score)</strong> 把数字变成文字，因为文字和数字不能直接用 + 拼接。就像字母和数字不能直接加，要先「翻译」成同一种格式。</div></div>
+      <div class="cl" onclick="tog(this)"><div class="ln">3</div><div class="lc"><span class="op">$</span><span class="cls">ScoreLabel</span>.text = <span class="str">"你的分数：%d"</span> % <span class="param">score</span></div><div class="exp">另一种更简洁的写法：用 <strong>%d</strong> 占位（d 代表整数），% score 把数字填进去。<br>结果一样是「你的分数：80」，但写起来更整洁。</div></div>
+    </div>
+  </div>
+
+  <!-- 思考题 -->
+  <div class="think-card">
+    <div class="think-label">💭 先想一想</div>
+    <div class="think-q">如果想在游戏界面显示「游戏结束！答案是 63」，其中 63 是存在变量 secret_number 里的，你会怎么写这行代码？</div>
+    <textarea class="think-area" placeholder="试着写出来……"></textarea>
+    <button class="reveal-btn" onclick="reveal('think5')">看答案</button>
+    <div class="answer-reveal" id="think5">有两种写法都对：<br><br><code style="font-family:var(--mono);background:var(--al);padding:2px 6px;border-radius:4px">$ResultLabel.text = "游戏结束！答案是 " + str(secret_number)</code><br><br>或者更简洁的：<br><br><code style="font-family:var(--mono);background:var(--al);padding:2px 6px;border-radius:4px">$ResultLabel.text = "游戏结束！答案是 %d" % secret_number</code></div>
+  </div>
+
+  <!-- MCQ -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">❓</div><h3>选择题 4</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">有变量 <span style="font-family:var(--mono)">var lives = 3</span>，想在游戏界面的 LivesLabel 上显示「剩余：3次」，正确写法是？</div>
+      <div class="opts">
+        <button class="opt" onclick="mcq(this,false,'q4','不对！print 只在调试面板显示，玩家看不到。')">print("剩余：" + lives + "次")</button>
+        <button class="opt" onclick="mcq(this,false,'q4','不对！数字不能直接用 + 和文字拼接，需要先 str() 转换。')">$LivesLabel.text = "剩余：" + lives + "次"</button>
+        <button class="opt" onclick="mcq(this,true,'q4','✓ 答对了！$ 找到节点，.text 改文字，str() 把数字变成文字再拼接。')">$LivesLabel.text = "剩余：" + str(lives) + "次"</button>
+        <button class="opt" onclick="mcq(this,false,'q4','不对！要用 $LivesLabel.text = 来改文字，而且 lives 是数字，不能直接赋给 text。')">LivesLabel = lives</button>
+      </div>
+      <div class="fb" id="q4"></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><button class="nav-btn" onclick="go(4)">← 上一步</button><span class="pi">第 6 / 8 步</span><button class="nav-btn p" onclick="go(6)">下一步：写代码挑战 →</button></div>
+</div>
+
+<!-- ══ S6: 写代码挑战 ══ -->
+<div class="sec" id="s6">
+  <div class="sec-title">🏆 写代码挑战</div>
+  <div class="sec-sub">前面都是选择题，现在轮到你自己写代码了！每道题都有提示，实在不会可以看答案。</div>
+
+  <!-- 挑战1 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">✍️</div><h3>挑战 1：写出变量</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">请写出猜数字游戏需要的 4 个变量：秘密数字（初始0）、剩余次数（初始5）、分数（初始100）、游戏是否结束（初始false）。</div>
+      <div class="q-hint">提示：每行开头用 var，true/false 要小写</div>
+      <div class="write-wrap">
+        <div class="write-top"><span>✏️ 在这里写代码</span><button class="reset-btn" onclick="resetWrite('w1','')">清空</button></div>
+        <textarea class="write-area" id="w1" placeholder="在这里写你的代码…&#10;var ..."></textarea>
+        <div class="write-btns">
+          <button class="run-btn" onclick="checkWrite1()">检查答案</button>
+          <button class="reset-btn" onclick="showAns('a1')">看答案</button>
+        </div>
+        <div class="run-output" id="w1out"></div>
+      </div>
+      <div class="answer-reveal" id="a1" style="font-family:var(--mono);font-size:13px;line-height:2">var secret_number   = 0<br>var remaining_lives = 5<br>var score           = 100<br>var game_over       = false</div>
+    </div>
+  </div>
+
+  <!-- 挑战2 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">✍️</div><h3>挑战 2：写出条件判断</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">写出猜数字的判断逻辑：如果猜对了打印「猜对了！」，如果猜小了打印「猜小了！」，否则打印「猜大了！」。假设变量已经有 player_input 和 secret_number。</div>
+      <div class="q-hint">提示：if / elif / else，条件后面要加冒号，下一行缩进</div>
+      <div class="write-wrap">
+        <div class="write-top"><span>✏️ 在这里写代码</span><button class="reset-btn" onclick="resetWrite('w2','')">清空</button></div>
+        <textarea class="write-area" id="w2" placeholder="if ..."></textarea>
+        <div class="write-btns">
+          <button class="run-btn" onclick="checkWrite2()">检查答案</button>
+          <button class="reset-btn" onclick="showAns('a2')">看答案</button>
+        </div>
+        <div class="run-output" id="w2out"></div>
+      </div>
+      <div class="answer-reveal" id="a2" style="font-family:var(--mono);font-size:13px;line-height:2">if player_input == secret_number:<br>&nbsp;&nbsp;&nbsp;&nbsp;print("猜对了！")<br>elif player_input &lt; secret_number:<br>&nbsp;&nbsp;&nbsp;&nbsp;print("猜小了！")<br>else:<br>&nbsp;&nbsp;&nbsp;&nbsp;print("猜大了！")</div>
+    </div>
+  </div>
+
+  <!-- 挑战3：改进游戏 -->
+  <div class="q-card">
+    <div class="q-hdr"><div class="q-icon">🚀</div><h3>挑战 3：改进游戏（创意题）</h3><div class="q-pts">+10分</div></div>
+    <div class="q-body">
+      <div class="q-text">现在游戏每猜错扣 20 分，5次扣完了分数就是 0。如果你想改成：第 1 次猜错扣 10 分，后面每次扣 20 分，你需要改哪个变量的初始值？怎么改？</div>
+      <div class="q-hint">提示：想想分数的起点是多少，才能让第一次猜错只扣 10 分</div>
+      <div class="write-wrap">
+        <div class="write-top"><span>✏️ 写下你的改法和理由</span></div>
+        <textarea class="write-area" id="w3" placeholder="我的想法是……&#10;需要改……因为……"></textarea>
+        <div class="write-btns"><button class="reset-btn" onclick="showAns('a3')">看参考答案</button></div>
+      </div>
+      <div class="answer-reveal" id="a3">一种方法：把 score 初始值从 100 改成 90，这样第一次扣 20 分后是 70，和原来扣 10 分效果不同……<br><br>更好的方法是：加一个新变量 <code style="font-family:var(--mono)">var first_guess = true</code>，第一次猜错时扣 10 并把它改成 false，之后每次扣 20。<br><br>能想到这个思路，你已经在独立设计游戏逻辑了！</div>
+    </div>
+  </div>
+
+  <div class="nav-row"><button class="nav-btn" onclick="go(5)">← 上一步</button><span class="pi">第 7 / 8 步</span><button class="nav-btn p" onclick="go(7)">看总成绩 →</button></div>
+</div>
+
+<!-- ══ S7: 总成绩 ══ -->
+<div class="sec" id="s7">
+  <div class="result-panel" id="result-panel">
+    <div class="result-emoji" id="r-emoji">🎓</div>
+    <div class="result-stars" id="r-stars">☆☆☆☆☆</div>
+    <div class="result-title" id="r-title">第一课完成！</div>
+    <div class="result-msg" id="r-msg">你今天学会了 GDScript 的基础语法</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;text-align:left">
+      <div style="padding:10px 16px;background:var(--gl);border-radius:var(--rs);font-size:15px;color:var(--green)">✓ var — 变量的写法</div>
+      <div style="padding:10px 16px;background:var(--gl);border-radius:var(--rs);font-size:15px;color:var(--green)">✓ func — 函数的写法</div>
+      <div style="padding:10px 16px;background:var(--gl);border-radius:var(--rs);font-size:15px;color:var(--green)">✓ if / elif / else — 条件判断</div>
+      <div style="padding:10px 16px;background:var(--gl);border-radius:var(--rs);font-size:15px;color:var(--green)">✓ $节点名.text — 更新游戏界面</div>
+      <div style="padding:10px 16px;background:var(--gl);border-radius:var(--rs);font-size:15px;color:var(--green)">✓ _ready() — Godot 自动调用的函数</div>
+      <div style="padding:10px 16px;background:var(--gl);border-radius:var(--rs);font-size:15px;color:var(--green)">✓ randi_range() — 生成随机数</div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button style="padding:10px 22px;border-radius:var(--rs);background:var(--purple);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer" onclick="go(1)">再玩一遍游戏</button>
+      <button style="padding:10px 22px;border-radius:var(--rs);background:var(--surface);color:var(--purple);border:2px solid var(--border2);font-size:15px;font-weight:600;cursor:pointer" onclick="go(0)">重新学习</button>
+    </div>
+  </div>
+  <div class="nav-row"><button class="nav-btn" onclick="go(6)">← 返回挑战</button><span></span><span></span></div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ── STATE ── */
+var cur=0, total=8, totalScore=0, maxScore=100;
+var pills=document.querySelectorAll('.pill');
+var answered={};
+
+function go(n){
+  document.getElementById('s'+cur).classList.remove('on');
+  pills[cur].classList.remove('on');
+  if(cur<n) pills[cur].classList.add('done');
+  cur=n;
+  document.getElementById('s'+cur).classList.add('on');
+  pills[cur].classList.remove('done');
+  pills[cur].classList.add('on');
+  document.getElementById('prog').style.width=((cur+1)/total*100)+'%';
+  if(n===7) showResult();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── SCORE ── */
+function addScore(id, pts){
+  if(answered[id]) return;
+  answered[id]=true;
+  totalScore=Math.min(maxScore, totalScore+pts);
+  document.getElementById('score-num').textContent=totalScore+' / '+maxScore;
+  var stars=Math.round(totalScore/10);
+  var s='';
+  for(var i=0;i<10;i++) s+=(i<stars?'⭐':'☆');
+  document.getElementById('star-display').textContent=s;
+}
+
+/* ── MCQ ── */
+function mcq(el, correct, id, msg){
+  var opts=el.parentNode.querySelectorAll('.opt');
+  opts.forEach(function(o){o.disabled=true});
+  var fb=document.getElementById(id);
+  fb.classList.add('on');
+  if(correct){
+    el.classList.add('correct');
+    fb.classList.add('ok');
+    fb.textContent='✓ '+msg;
+    addScore(id,10);
+  } else {
+    el.classList.add('wrong');
+    fb.classList.add('no');
+    fb.textContent='✗ '+msg;
+    opts.forEach(function(o){
+      if(o.getAttribute('onclick')&&o.getAttribute('onclick').includes('true')) o.classList.add('correct');
+    });
+  }
+}
+
+/* ── FILL IN ── */
+function checkFill(){
+  var v1=parseInt(document.getElementById('f1').value);
+  var v2=parseInt(document.getElementById('f2').value);
+  var fb=document.getElementById('fq1');
+  fb.classList.add('on');
+  if(v1===5&&v2===1){
+    fb.classList.add('ok');
+    fb.textContent='✓ 答对了！5次机会，每次错了减1。';
+    document.getElementById('f1').classList.add('ok');
+    document.getElementById('f2').classList.add('ok');
+    addScore('fq1',10);
+  } else {
+    fb.classList.add('no');
+    fb.textContent='✗ 不对哦，回去玩一遍游戏看看有几条命！';
+    if(v1!==5) document.getElementById('f1').classList.add('no');
+    if(v2!==1) document.getElementById('f2').classList.add('no');
+  }
+}
+
+/* ── CODE FILL ── */
+var codeAnswers=['secret_number','remaining_lives','game_over'];
+function checkCodeFill(){
+  var inputs=[document.getElementById('cb1'),document.getElementById('cb2'),document.getElementById('cb3')];
+  var fb=document.getElementById('cfb1');
+  fb.classList.remove('ok','no');
+  fb.classList.add('on');
+  var allOk=true;
+  inputs.forEach(function(inp,i){
+    inp.classList.remove('ok','no');
+    var val=inp.value.trim().replace(/\s/g,'');
+    if(val===codeAnswers[i]){inp.classList.add('ok');}
+    else{inp.classList.add('no');allOk=false;}
+  });
+  if(allOk){
+    fb.classList.add('ok');
+    fb.textContent='✓ 完美！三个变量名都正确！';
+    addScore('cfb1',10);
+  } else {
+    fb.classList.add('no');
+    fb.textContent='✗ 有些变量名不对，看看代码里的正确写法是什么。';
+  }
+}
+
+/* ── DRAG MATCH ── */
+var dragged='';
+var matchAnswers={md0:'场景加载完自动运行',md1:'玩家点确认按钮时',md2:'每次猜完后刷新界面'};
+var dropState={};
+function dragStart(e,val){dragged=val;}
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function dropIt(e,id){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  e.currentTarget.textContent=dragged;
+  e.currentTarget.classList.add('filled');
+  dropState[id]=dragged;
+}
+function checkMatch(){
+  var fb=document.getElementById('mfb');
+  fb.classList.add('on');
+  fb.classList.remove('ok','no');
+  var allOk=true;
+  Object.keys(matchAnswers).forEach(function(id){
+    var el=document.getElementById(id);
+    el.classList.remove('correct','wrong');
+    if(dropState[id]===matchAnswers[id]){el.classList.add('correct');}
+    else{el.classList.add('wrong');allOk=false;}
+  });
+  if(allOk){
+    fb.classList.add('ok');
+    fb.textContent='✓ 全部配对正确！';
+    addScore('mfb',10);
+  } else {
+    fb.classList.add('no');
+    fb.textContent='✗ 有些配对不对，再试试！（提示：_ready 是 Godot 自动调用的）';
+  }
+}
+
+/* ── SLIDER ── */
+var secretDemo=63;
+function updateSlider(){
+  var v=parseInt(document.getElementById('guess-slider').value);
+  document.getElementById('slider-val').textContent=v;
+  var r=document.getElementById('slider-result');
+  if(v===secretDemo){
+    r.style.background='var(--gl)';r.style.color='var(--green)';
+    r.textContent='猜 '+v+'，秘密数是 63 → 猜对了！🎉 game_over = true';
+  } else if(v<secretDemo){
+    r.style.background='var(--bl)';r.style.color='var(--blue)';
+    r.textContent='猜 '+v+'，秘密数是 63 → 猜小了！⬆ remaining_lives -= 1';
+  } else {
+    r.style.background='var(--rl)';r.style.color='var(--red)';
+    r.textContent='猜 '+v+'，秘密数是 63 → 猜大了！⬇ remaining_lives -= 1';
+  }
+}
+updateSlider();
+
+/* ── WRITE CODE CHECK ── */
+function checkWrite1(){
+  var code=document.getElementById('w1').value;
+  var out=document.getElementById('w1out');
+  out.classList.add('on');
+  var checks=[
+    {re:/var\s+secret_number\s*=\s*0/,msg:'secret_number = 0 ✓'},
+    {re:/var\s+remaining_lives\s*=\s*5/,msg:'remaining_lives = 5 ✓'},
+    {re:/var\s+score\s*=\s*100/,msg:'score = 100 ✓'},
+    {re:/var\s+game_over\s*=\s*false/,msg:'game_over = false ✓'},
+  ];
+  var results=[]; var allOk=true;
+  checks.forEach(function(c){
+    if(c.re.test(code)){results.push('✅ '+c.msg);}
+    else{results.push('❌ 缺少：'+c.msg);allOk=false;}
+  });
+  out.style.color=allOk?'#6ee7b7':'#fca5a5';
+  out.innerHTML=results.join('<br>');
+  if(allOk){out.innerHTML+='<br><br>🎉 全部正确！';addScore('w1',10);}
+}
+function checkWrite2(){
+  var code=document.getElementById('w2').value;
+  var out=document.getElementById('w2out');
+  out.classList.add('on');
+  var hasIf=/if\s+player_input\s*==\s*secret_number/.test(code);
+  var hasElif=/elif\s+player_input\s*<\s*secret_number/.test(code);
+  var hasElse=/else\s*:/.test(code);
+  var results=[];
+  if(hasIf) results.push('✅ if player_input == secret_number 正确');
+  else results.push('❌ 缺少：if player_input == secret_number:');
+  if(hasElif) results.push('✅ elif player_input < secret_number 正确');
+  else results.push('❌ 缺少：elif player_input < secret_number:');
+  if(hasElse) results.push('✅ else: 正确');
+  else results.push('❌ 缺少：else:');
+  var allOk=hasIf&&hasElif&&hasElse;
+  out.style.color=allOk?'#6ee7b7':'#fca5a5';
+  out.innerHTML=results.join('<br>');
+  if(allOk){out.innerHTML+='<br><br>🎉 逻辑完全正确！';addScore('w2',10);}
+}
+function resetWrite(id){ document.getElementById(id).value=''; }
+function showAns(id){ document.getElementById(id).classList.toggle('on'); }
+
+/* ── REVEAL ── */
+function reveal(id){ document.getElementById(id).classList.toggle('on'); }
+
+/* ── CODE EXPLAIN ── */
+function tog(row){
+  var ex=row.querySelector('.exp');
+  var isOpen=ex.classList.contains('on');
+  var all=row.closest('.code-body').querySelectorAll('.exp');
+  var allRows=row.closest('.code-body').querySelectorAll('.cl');
+  all.forEach(function(e){e.classList.remove('on')});
+  allRows.forEach(function(r){r.classList.remove('lit')});
+  if(!isOpen){ex.classList.add('on');row.classList.add('lit');}
+}
+
+/* ── RESULT ── */
+function showResult(){
+  var pct=totalScore/maxScore;
+  var emoji,stars,title,msg;
+  if(pct>=0.9){emoji='🏆';stars='⭐⭐⭐⭐⭐';title='满分高手！';msg='你掌握了 GDScript 所有基础知识，可以开始在 Godot 里写自己的游戏了！';}
+  else if(pct>=0.7){emoji='🥇';stars='⭐⭐⭐⭐☆';title='非常棒！';msg='大部分内容都掌握了，有几道题再回去看看，会理解得更透彻。';}
+  else if(pct>=0.5){emoji='👍';stars='⭐⭐⭐☆☆';title='完成了！';msg='基础掌握得不错，建议回去把出错的题目重新看一遍再做一次。';}
+  else{emoji='💪';stars='⭐⭐☆☆☆';title='继续加油！';msg='编程学习需要多练习，建议从第一步重新学一遍，不懂的地方多看看说明。';}
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-stars').textContent=stars;
+  document.getElementById('r-title').textContent=title+' ('+totalScore+'/'+maxScore+'分)';
+  document.getElementById('r-msg').textContent=msg;
+}
+
+/* ── GAME ── */
+var sN,gLives,gOver,gMin,gMax,gHist;
+function resetG(){
+  sN=Math.floor(Math.random()*100)+1;
+  gLives=5;gOver=false;gMin=1;gMax=100;gHist=[];
+  for(var i=0;i<5;i++) document.getElementById('l'+i).className='life';
+  document.getElementById('gs').innerHTML='我已经想好了一个 <span class="g-hl">1 到 100</span> 之间的数字！你有 <span class="g-hl">5 次</span> 机会猜对它。';
+  document.getElementById('ghint').textContent='提示：范围 1 到 100';
+  document.getElementById('ghist').innerHTML='';
+  document.getElementById('g-irow').style.display='flex';
+  document.getElementById('gi').value='';
+}
+function doGuess(){
+  if(gOver) return;
+  var v=parseInt(document.getElementById('gi').value);
+  if(isNaN(v)||v<1||v>100){document.getElementById('ghint').textContent='请输入 1-100 的数字';return;}
+  var hist=document.getElementById('ghist');
+  var item=document.createElement('div');
+  item.className='g-hist-item';
+  if(v===sN){
+    gOver=true;
+    document.getElementById('gs').innerHTML='<span class="g-ok">🎉 猜对了！答案是 '+v+'，用了 '+gHist.length+1+' 次</span>';
+    document.getElementById('g-irow').style.display='none';
+    item.textContent='猜 '+v+' → 正确！';item.style.color='#86efac';
+  } else {
+    gLives--;
+    document.getElementById('l'+(5-gLives-1)).className='life lost';
+    if(v<sN){gMin=v+1;document.getElementById('gs').innerHTML='<span class="g-no">⬆ 猜小了！</span> 再大一点';item.textContent='猜 '+v+' → 太小';}
+    else{gMax=v-1;document.getElementById('gs').innerHTML='<span class="g-no">⬇ 猜大了！</span> 再小一点';item.textContent='猜 '+v+' → 太大';}
+    document.getElementById('ghint').textContent='缩小范围：'+gMin+' 到 '+gMax;
+    if(gLives===0){gOver=true;document.getElementById('gs').innerHTML='<span class="g-no">💀 没猜到！</span>答案是 '+sN;document.getElementById('g-irow').style.display='none';}
+  }
+  gHist.push(v);
+  hist.insertBefore(item,hist.firstChild);
+  document.getElementById('gi').value='';
+}
+resetG();
+</script>
+</body>
+</html>
